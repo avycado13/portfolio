@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>avycado13s portfolio</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <!-- Twitter Card meta tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="avycado13's Portfolio">
+    <meta name="twitter:description" content="Check out my personal projects, GitHub code, and more.">
+    <meta name="twitter:image" content="https://avycado13.dev/preview-image.png">
+    <meta name="twitter:site" content="@avycado13">
+    <meta name="twitter:creator" content="@avycado13">
+    <!-- Open Graph meta tags -->
+    <meta property="og:title" content="avycado13's Portfolio" />
+    <meta property="og:description" content="Check out my personal projects, GitHub code, and more." />
+    <meta property="og:image" content="https://avycado13.dev/preview-image.png" />
+    <meta property="og:url" content="https://avycado13.dev/" />
+    <meta property="og:type" content="website" />
+  </head>
+  <body>
+    <nav class="navbar bg-base-100 shadow-sm">
+      <div class="flex-1">
+        <a class="btn btn-ghost text-xl transition duration-0 md:duration-150 ease-in-out">avycado13s portfolio</a>
+      </div>
+      <div class="flex items-center space-x-2">
+        <ul class="menu menu-horizontal px-1">
+          <li><a href="#projects" class="nav-link">Projects</a></li>
+          <li><a href="#about" class="nav-link">About</a></li>
+          <li><a href="#contact" class="nav-link">Contact</a></li>
+        </ul>
+        <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
+          <div class="w-10 rounded-full">
+            <a href="https://github.com/avycado13">
+              <img
+                alt="GitHub"
+                src="./github-mark.png" />
+            </a>
+          </div>
+        </div>
+        <div class="ml-2">
+          <label class="cursor-pointer grid place-items-center">
+            <input type="checkbox" class="toggle theme-controller" data-toggle-theme="dark,light" data-act-class="ACTIVECLASS"/>
+          </label>
+        </div>
+      </div>
+      <script>
+        const toggle = document.querySelector('.theme-controller');
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) document.documentElement.setAttribute('data-theme', savedTheme);
+        toggle.checked = savedTheme === 'dark';
+
+        toggle.addEventListener('change', () => {
+          const theme = toggle.checked ? 'dark' : 'light';
+          document.documentElement.setAttribute('data-theme', theme);
+          localStorage.setItem('theme', theme);
+        });
+      </script>
+    </nav>
+    <div id="projects"></div>
+    <script>
+
+const appElement = document.querySelector<HTMLDivElement>('#projects');
+if (appElement) {
+  appElement.innerHTML = `
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 justify-items-center">
+      ${Array.from({ length: 3 }).map(() => `
+        <div class="card w-full max-w-sm bg-base-200 animate-pulse m-2">
+          <div class="h-48 bg-base-300 rounded-t"></div>
+          <div class="card-body space-y-2">
+            <div class="h-4 bg-base-300 rounded w-3/4"></div>
+            <div class="h-3 bg-base-300 rounded w-1/2"></div>
+            <div class="flex space-x-2">
+              <div class="btn btn-disabled btn-sm bg-base-300 border-none w-24 h-8"></div>
+              <div class="btn btn-disabled btn-sm bg-base-300 border-none w-24 h-8"></div>
+            </div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+const resp = await fetch("/projects.json", {})
+
+const projects = await resp.json()
+console.log(projects)
+
+
+const html = []
+
+const uniqueTags = [...new Set(projects.flatMap(p => p.tags || []))];
+html.push('<div class="flex flex-wrap gap-2 justify-center mb-4 px-4">');
+for (const tag of uniqueTags) {
+  html.push(`
+    <label class="label cursor-pointer">
+      <span class="label-text mr-1">${tag}</span>
+      <input type="checkbox" class="checkbox tag-filter" value="${tag}" />
+    </label>
+  `);
+}
+html.push('</div>');
+
+html.push('<div id="projectGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 justify-items-center">');
+
+for (const project of projects) {
+  
+    html.push(`
+<div class="card bg-base-100 w-full max-w-sm shadow-sm transition duration-0 md:duration-150 ease-in-out m-2">
+  <figure>
+    ${project.imageUrl ? `<img src="${project.imageUrl}" alt="${project.title}" />` : 'No Image'}
+  </figure>
+  <div class="card-body px-4 sm:px-6">
+    <h2 class="card-title">${project.title}</h2>
+    <p>${project.description}</p>
+    <div class="flex flex-wrap gap-2 mt-2">
+      ${(project.tags || []).map(tag => `<span class="badge badge-outline">${tag}</span>`).join('')}
+    </div>
+    <div class="card-actions justify-end">
+      <button class="btn btn-outline" onclick="showProjectModal(${encodeURIComponent(JSON.stringify(project))})">More Info</button>
+    </div>
+  </div>
+`)
+}
+
+html.push('</div>');
+
+if (appElement) {
+  appElement.innerHTML = html.join('\n');
+} else {
+  console.error('App element not found');
+}
+
+document.querySelectorAll('.tag-filter').forEach(cb =>
+  cb.addEventListener('change', () => {
+    const activeTags = [...document.querySelectorAll('.tag-filter:checked')].map(el => el.value);
+    document.querySelectorAll('#projectGrid > div.card').forEach(card => {
+      const cardTags = [...card.querySelectorAll('.badge')].map(el => el.textContent);
+      const match = activeTags.length === 0 || activeTags.some(tag => cardTags.includes(tag));
+      card.style.display = match ? '' : 'none';
+    });
+  })
+);
+
+function showProjectModal(projectData) {
+  const project = typeof projectData === 'string' ? JSON.parse(decodeURIComponent(projectData)) : projectData;
+  document.getElementById('modalTitle').textContent = project.title;
+  document.getElementById('modalDescription').textContent = project.description;
+  document.getElementById('modalLink').href = project.link;
+  document.getElementById('modalCode').href = project.github;
+  document.getElementById('projectModal').showModal();
+}
+
+
+
+    </script>
+    <div id="projectModal" class="modal">
+      <div class="modal-box w-full max-w-md">
+        <h3 id="modalTitle" class="font-bold text-lg"></h3>
+        <p id="modalDescription" class="py-4"></p>
+        <div class="modal-action">
+          <a id="modalLink" class="btn btn-primary" target="_blank">View Project</a>
+          <a id="modalCode" class="btn btn-secondary" target="_blank">View Code</a>
+          <button class="btn" onclick="document.getElementById('projectModal').close()">Close</button>
+        </div>
+      </div>
+    </div>
+</footer>
+    <footer class="footer footer-center p-4 bg-base-200 text-base-content mt-10">
+      <aside>
+        <p>© <script>document.write(new Date().getFullYear())</script> avycado13. Built with ♥ using Cloudflare Pages, Tailwind CSS, and daisyUI.</p>
+        <p><a href="https://github.com/avycado13" class="link link-hover">GitHub</a></p>
+      </aside>
+    </footer>
+  </body>
+</html>
