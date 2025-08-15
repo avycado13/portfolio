@@ -22,9 +22,9 @@ h1 {
 	animation: color-change 5s linear infinite;
 }
 
-h1:hover {
+/* h1:hover {
     animation-play-state: paused;
-}
+} */
 
 @keyframes gradientShift {
     0% {
