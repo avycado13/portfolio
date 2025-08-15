@@ -10,11 +10,12 @@
 
     <p>You can find me <a href="https://github.com/avycado13">@avycado13</a></p>
     <script>
+document.addEventListener('DOMContentLoaded', () => {
     const heading = document.querySelector('h1');
-
     heading.addEventListener('click', () => {
-        heading.classList.toggle('spin'); // add/remove spinning
+        heading.classList.toggle('spin');
     });
+});
 </script>
 </body>
 </html>
